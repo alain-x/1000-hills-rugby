@@ -57,12 +57,13 @@ class SquadSessionController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        $data['team_id'] = $this->teamIdFor($request, (int) $data['team_id']);
         $data['created_by'] = $request->user()->id;
         $session = SquadSession::create($data);
 
         Activity::log('created', $session, 'Scheduled '.$session->title);
 
-        return redirect()->route('admin.sessions.show', $session)->with('success', 'Session scheduled. The squad coach can now take the register.');
+        return redirect()->route('admin.sessions.show', $session)->with('success', 'Session scheduled. You can now take the register.');
     }
 
     public function show(Request $request, SquadSession $squadSession)
@@ -82,6 +83,8 @@ class SquadSessionController extends Controller
 
     public function edit(Request $request, SquadSession $squadSession)
     {
+        $this->guard($request, $squadSession);
+
         $teams = SquadAccess::teamsFor($request->user());
         $session = $squadSession;
 
@@ -90,14 +93,21 @@ class SquadSessionController extends Controller
 
     public function update(Request $request, SquadSession $squadSession)
     {
-        $squadSession->update($this->validated($request));
+        $this->guard($request, $squadSession);
+
+        $data = $this->validated($request);
+        $data['team_id'] = $this->teamIdFor($request, (int) $data['team_id']);
+
+        $squadSession->update($data);
         Activity::log('updated', $squadSession, 'Updated '.$squadSession->title);
 
         return redirect()->route('admin.sessions.show', $squadSession)->with('success', 'Session updated.');
     }
 
-    public function destroy(SquadSession $squadSession)
+    public function destroy(Request $request, SquadSession $squadSession)
     {
+        $this->guard($request, $squadSession);
+
         $title = $squadSession->title;
         Activity::log('deleted', $squadSession, 'Removed '.$title);
         $squadSession->delete();
@@ -132,6 +142,16 @@ class SquadSessionController extends Controller
     {
         $user = $request->user();
         abort_if($user->isCoach() && (int) $user->team_id !== (int) $session->team_id, 403);
+    }
+
+    /**
+     * A coach always schedules for their own squad; admins keep the chosen team.
+     */
+    private function teamIdFor(Request $request, int $requested): int
+    {
+        $user = $request->user();
+
+        return $user->isCoach() ? (int) $user->team_id : $requested;
     }
 
     private function attendanceRates($team)

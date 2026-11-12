@@ -1,15 +1,15 @@
 @extends('admin.layouts.app')
 
 @section('page_title', 'Squad sessions')
-@section('page_subtitle', 'Training, matches and other squad events')
+@section('page_subtitle', 'Plan training, matches and other squad events')
 
 @section('content')
 <div class="page-head">
     <div>
         <h1>Squad sessions</h1>
-        <div class="sub">Schedule a session, then the coach records the register.</div>
+        <div class="sub">Plan a session, then take the register after it is saved.</div>
     </div>
-    @if(auth()->user()->isAdmin())
+    @if(auth()->user()->isCoach())
         <a href="{{ route('admin.sessions.create', ['team' => $team?->id]) }}" class="btn btn-admin-forest"><i class="bi bi-plus-lg me-1"></i>New session</a>
     @endif
 </div>
@@ -74,13 +74,13 @@
                         </td>
                         <td class="text-end text-nowrap">
                             <a href="{{ route('admin.sessions.show', $session) }}" class="btn btn-admin-outline btn-sm">Register</a>
-                            @if(auth()->user()->isAdmin())
+                            @if(auth()->user()->isCoach())
                                 <a href="{{ route('admin.sessions.edit', $session) }}" class="btn btn-admin-outline btn-sm">Edit</a>
                             @endif
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center text-muted py-5">No sessions yet. An administrator can schedule training, a match, gym, recovery, or a meeting.</td></tr>
+                    <tr><td colspan="5" class="text-center text-muted py-5">No sessions yet. Schedule your first training, match, gym, recovery, or meeting session.</td></tr>
                 @endforelse
             </tbody>
         </table>

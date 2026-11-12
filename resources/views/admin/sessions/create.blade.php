@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="page-head">
-    <div><h1>New session</h1><div class="sub">The squad coach records attendance after this is saved.</div></div>
+    <div><h1>New session</h1><div class="sub">Plan the session now, then take the register once it is saved.</div></div>
     <a href="{{ route('admin.sessions.index') }}" class="btn btn-admin-outline"><i class="bi bi-arrow-left me-1"></i>Back</a>
 </div>
 @include('admin.partials.errors')

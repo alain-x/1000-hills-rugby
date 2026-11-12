@@ -23,7 +23,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="{{ route('admin.sessions.index', ['team' => $squadSession->team_id]) }}" class="btn btn-admin-outline"><i class="bi bi-arrow-left me-1"></i>Sessions</a>
-        @if(auth()->user()->isAdmin())
+        @if(auth()->user()->isCoach())
             <a href="{{ route('admin.sessions.edit', $squadSession) }}" class="btn btn-admin-outline">Edit</a>
         @endif
     </div>
@@ -117,7 +117,7 @@
     </div>
 </form>
 
-@if(auth()->user()->isAdmin())
+@if(auth()->user()->isCoach())
     <form action="{{ route('admin.sessions.destroy', $squadSession) }}" method="POST" class="mt-3" onsubmit="return confirm('Remove this session and its register?')">
         @csrf
         @method('DELETE')

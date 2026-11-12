@@ -102,12 +102,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::get('sessions', [SquadSessionController::class, 'index'])->name('sessions.index');
-        Route::get('sessions/create', [SquadSessionController::class, 'create'])->middleware('superadmin')->name('sessions.create');
-        Route::post('sessions', [SquadSessionController::class, 'store'])->middleware('superadmin')->name('sessions.store');
+        // Only a coach plans and schedules squad sessions.
+        Route::get('sessions/create', [SquadSessionController::class, 'create'])->middleware('coach')->name('sessions.create');
+        Route::post('sessions', [SquadSessionController::class, 'store'])->middleware('coach')->name('sessions.store');
         Route::get('sessions/{squadSession}', [SquadSessionController::class, 'show'])->name('sessions.show');
-        Route::get('sessions/{squadSession}/edit', [SquadSessionController::class, 'edit'])->middleware('superadmin')->name('sessions.edit');
-        Route::put('sessions/{squadSession}', [SquadSessionController::class, 'update'])->middleware('superadmin')->name('sessions.update');
-        Route::delete('sessions/{squadSession}', [SquadSessionController::class, 'destroy'])->middleware('superadmin')->name('sessions.destroy');
+        Route::get('sessions/{squadSession}/edit', [SquadSessionController::class, 'edit'])->middleware('coach')->name('sessions.edit');
+        Route::put('sessions/{squadSession}', [SquadSessionController::class, 'update'])->middleware('coach')->name('sessions.update');
+        Route::delete('sessions/{squadSession}', [SquadSessionController::class, 'destroy'])->middleware('coach')->name('sessions.destroy');
         Route::post('sessions/{squadSession}/attendance', [AttendanceController::class, 'store'])->middleware('coach')->name('sessions.attendance');
         Route::get('reports', [PlayerReportController::class, 'index'])->name('reports.index');
         Route::get('reports/create', [PlayerReportController::class, 'create'])->middleware('coach')->name('reports.create');

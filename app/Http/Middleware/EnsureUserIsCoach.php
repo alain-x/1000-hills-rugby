@@ -10,7 +10,7 @@ class EnsureUserIsCoach
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->isCoach(), 403, 'Only a coach can record attendance, rate players, or write reports.');
+        abort_unless($request->user()?->isCoach(), 403, 'Only a coach can plan sessions, schedule squads, record attendance, or write player reports.');
 
         return $next($request);
     }

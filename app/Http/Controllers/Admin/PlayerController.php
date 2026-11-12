@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Player;
 use App\Models\Team;
+use App\Models\User;
 use App\Support\Activity;
+use App\Support\SquadAccess;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -13,10 +16,13 @@ class PlayerController extends Controller
 {
     public function index(Request $request)
     {
-        $teams = Team::orderBy('sort_order')->get();
+        $user = $request->user();
+        $teams = SquadAccess::teamsFor($user);
         $query = Player::query()->with('teamRelation');
 
-        if ($request->filled('team')) {
+        if ($user->isCoach()) {
+            $this->scopeToCoachTeam($query, $user);
+        } elseif ($request->filled('team')) {
             $query->where('team', $request->get('team'));
         }
 
@@ -33,10 +39,17 @@ class PlayerController extends Controller
         return view('admin.players.index', compact('players', 'teams'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $player = new Player(['is_published' => true, 'team' => 'men']);
-        $teams = Team::orderBy('sort_order')->get();
+        $user = $request->user();
+        $teams = SquadAccess::teamsFor($user);
+        $team = $user->isCoach() ? $teams->first() : null;
+
+        $player = new Player([
+            'is_published' => true,
+            'team' => $team?->category ?? 'men',
+            'team_id' => $team?->id,
+        ]);
 
         return view('admin.players.create', compact('player', 'teams'));
     }
@@ -44,6 +57,7 @@ class PlayerController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        $data = $this->forceCoachTeam($request, $data);
         $data['slug'] = unique_slug($data['name'], Player::class);
         $data['image'] = upload_media($request->file('image'), 'players');
         $data = $this->normalise($data);
@@ -59,16 +73,21 @@ class PlayerController extends Controller
         return redirect()->route('admin.players.edit', $player);
     }
 
-    public function edit(Player $player)
+    public function edit(Request $request, Player $player)
     {
-        $teams = Team::orderBy('sort_order')->get();
+        $this->guardCoach($request, $player);
+
+        $teams = SquadAccess::teamsFor($request->user());
 
         return view('admin.players.edit', compact('player', 'teams'));
     }
 
     public function update(Request $request, Player $player)
     {
+        $this->guardCoach($request, $player);
+
         $data = $this->validated($request);
+        $data = $this->forceCoachTeam($request, $data);
         $data['slug'] = unique_slug($data['name'], Player::class, $player->id);
 
         if ($request->hasFile('image')) {
@@ -145,6 +164,60 @@ class PlayerController extends Controller
                 $data['team'] = $team->category;
             }
         }
+
+        return $data;
+    }
+
+    /**
+     * Limit a listing to the squad the coach is responsible for.
+     */
+    private function scopeToCoachTeam(Builder $query, User $user): void
+    {
+        $team = SquadAccess::team($user, null);
+
+        if (! $team) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where(fn (Builder $q) => $q->where('team_id', $team->id)->orWhere('team', $team->category));
+    }
+
+    /**
+     * A coach may only open players that belong to their own squad.
+     */
+    private function guardCoach(Request $request, Player $player): void
+    {
+        $user = $request->user();
+
+        if (! $user->isCoach()) {
+            return;
+        }
+
+        $team = SquadAccess::team($user, null);
+        $owns = $team
+            && ((int) $player->team_id === (int) $team->id || $player->team === $team->category);
+
+        abort_unless($owns, 403, 'You can only manage players in your own squad.');
+    }
+
+    /**
+     * A coach always adds or updates players inside their own squad.
+     */
+    private function forceCoachTeam(Request $request, array $data): array
+    {
+        $user = $request->user();
+
+        if (! $user->isCoach()) {
+            return $data;
+        }
+
+        $team = SquadAccess::team($user, null);
+        abort_unless($team, 403, 'Your account is not linked to a squad yet.');
+
+        $data['team_id'] = $team->id;
+        $data['team'] = $team->category;
 
         return $data;
     }

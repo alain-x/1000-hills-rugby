@@ -41,6 +41,9 @@
 
             @if($admin?->isCoach() || $admin?->isAdmin())
                 <p class="admin-sidebar-heading">Player development</p>
+                @if($admin?->isCoach())
+                    <a class="nav-link {{ request()->routeIs('admin.players.*') ? 'active' : '' }}" href="{{ route('admin.players.index') }}"><i class="bi bi-person-badge"></i>Players</a>
+                @endif
                 <a class="nav-link {{ request()->routeIs('admin.sessions.*', 'admin.attendance.*') ? 'active' : '' }}" href="{{ route('admin.sessions.index') }}"><i class="bi bi-clipboard-check"></i>Sessions</a>
                 <a class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}"><i class="bi bi-star"></i>Ratings &amp; reports</a>
             @endif
@@ -150,6 +153,9 @@
             @endunless
             @if($admin?->isCoach() || $admin?->isAdmin())
                 <p class="admin-sidebar-heading">Player development</p>
+                @if($admin?->isCoach())
+                    <a class="nav-link {{ request()->routeIs('admin.players.*') ? 'active' : '' }}" href="{{ route('admin.players.index') }}"><i class="bi bi-person-badge"></i>Players</a>
+                @endif
                 <a class="nav-link {{ request()->routeIs('admin.sessions.*', 'admin.attendance.*') ? 'active' : '' }}" href="{{ route('admin.sessions.index') }}"><i class="bi bi-clipboard-check"></i>Sessions</a>
                 <a class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}"><i class="bi bi-star"></i>Ratings &amp; reports</a>
             @endif

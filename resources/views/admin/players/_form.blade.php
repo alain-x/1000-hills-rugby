@@ -19,23 +19,33 @@
                         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label" for="team_id">Linked team</label>
-                        <select id="team_id" name="team_id" class="form-select">
-                            <option value="">Not linked</option>
-                            @foreach($teams as $team)
-                                <option value="{{ $team->id }}" @selected((int) old('team_id', $player->team_id) === $team->id)>{{ $team->name }}</option>
-                            @endforeach
-                        </select>
+                        @if(auth()->user()->isCoach())
+                            <label class="form-label">Squad</label>
+                            <input type="text" class="form-control" value="{{ $teams->first()?->name ?? 'No squad linked' }}" disabled>
+                            <div class="form-text">Players you add go into your own squad.</div>
+                            <input type="hidden" name="team_id" value="{{ $teams->first()?->id }}">
+                            <input type="hidden" name="team" value="{{ $teams->first()?->category }}">
+                        @else
+                            <label class="form-label" for="team_id">Linked team</label>
+                            <select id="team_id" name="team_id" class="form-select">
+                                <option value="">Not linked</option>
+                                @foreach($teams as $team)
+                                    <option value="{{ $team->id }}" @selected((int) old('team_id', $player->team_id) === $team->id)>{{ $team->name }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="team">Squad category <span class="text-danger">*</span></label>
-                        <select id="team" name="team" class="form-select" required>
-                            @foreach($categories as $value => $label)
-                                <option value="{{ $value }}" @selected(old('team', $player->team) === $value)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        <div class="form-text">Linking a team updates this automatically.</div>
-                    </div>
+                    @unless(auth()->user()->isCoach())
+                        <div class="col-md-4">
+                            <label class="form-label" for="team">Squad category <span class="text-danger">*</span></label>
+                            <select id="team" name="team" class="form-select" required>
+                                @foreach($categories as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('team', $player->team) === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <div class="form-text">Linking a team updates this automatically.</div>
+                        </div>
+                    @endunless
                     <div class="col-md-4">
                         <label class="form-label" for="position_category">Position group</label>
                         <select id="position_category" name="position_category" class="form-select">

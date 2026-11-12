@@ -13,10 +13,11 @@
 ])
 
 @section('content')
+@php($coach = auth()->user()->isCoach())
 <div class="page-head">
     <div>
         <h1>Players</h1>
-        <div class="sub">{{ $players->total() }} player profile{{ $players->total() === 1 ? '' : 's' }}</div>
+        <div class="sub">{{ $players->total() }} {{ $coach ? 'player in your squad' : 'player profile'.($players->total() === 1 ? '' : 's') }}</div>
     </div>
     <a href="{{ route('admin.players.create') }}" class="btn btn-admin-forest"><i class="bi bi-person-plus me-1"></i>Add player</a>
 </div>
@@ -28,15 +29,17 @@
                 <label class="form-label">Search</label>
                 <input type="search" name="q" value="{{ request('q') }}" class="form-control" placeholder="Name or position">
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Squad</label>
-                <select name="team" class="form-select">
-                    <option value="">All squads</option>
-                    @foreach($teams as $team)
-                        <option value="{{ $team->category }}" @selected(request('team') === $team->category)>{{ $team->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+            @unless($coach)
+                <div class="col-md-3">
+                    <label class="form-label">Squad</label>
+                    <select name="team" class="form-select">
+                        <option value="">All squads</option>
+                        @foreach($teams as $team)
+                            <option value="{{ $team->category }}" @selected(request('team') === $team->category)>{{ $team->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endunless
             <div class="col-md-3">
                 <label class="form-label">Status</label>
                 <select name="status" class="form-select">
@@ -89,10 +92,12 @@
                                 <a href="{{ route('players.show', $player) }}" target="_blank" rel="noopener" class="btn btn-admin-outline btn-sm" title="View"><i class="bi bi-eye"></i></a>
                             @endif
                             <a href="{{ route('admin.players.edit', $player) }}" class="btn btn-admin-outline btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
-                            <form action="{{ route('admin.players.destroy', $player) }}" method="POST" class="d-inline" data-confirm="Remove this player profile?">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-outline-danger btn-sm" type="submit" title="Delete"><i class="bi bi-trash"></i></button>
-                            </form>
+                            @unless($coach)
+                                <form action="{{ route('admin.players.destroy', $player) }}" method="POST" class="d-inline" data-confirm="Remove this player profile?">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-outline-danger btn-sm" type="submit" title="Delete"><i class="bi bi-trash"></i></button>
+                                </form>
+                            @endunless
                         </td>
                     </tr>
                 @empty

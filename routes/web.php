@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\DonationController as AdminDonationController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\FixtureController as AdminFixtureController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Admin\PasswordResetController;
 use App\Http\Controllers\Admin\PlayerController as AdminPlayerController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\SeasonController;
@@ -92,6 +93,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('login', [AuthController::class, 'showLogin'])->name('login');
         Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.attempt');
+
+        // Staff password reset by email (sent from the no-reply address).
+        Route::get('forgot-password', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
+        Route::post('forgot-password', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:6,1')->name('password.email');
+        Route::get('reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+        Route::post('reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:6,1')->name('password.update');
     });
 
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');

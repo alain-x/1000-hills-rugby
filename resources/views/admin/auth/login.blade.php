@@ -38,7 +38,10 @@
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="password" class="form-label mb-0">Password</label>
+                        <a href="{{ route('admin.password.request') }}" class="small">Forgot password?</a>
+                    </div>
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
                         <input type="password" id="password" name="password" class="form-control" autocomplete="current-password" required>

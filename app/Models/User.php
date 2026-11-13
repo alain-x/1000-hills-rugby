@@ -75,4 +75,12 @@ class User extends Authenticatable
 
         return mb_strtoupper(collect($parts)->take(2)->map(fn ($p) => mb_substr($p, 0, 1))->implode(''));
     }
+
+    /**
+     * Send the branded, no-reply password reset email.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
 }

@@ -23,10 +23,10 @@
                         <label class="form-label" for="role">Role <span class="text-danger">*</span></label>
                         <select id="role" name="role" class="form-select" required>
                             <option value="editor" @selected(old('role', $user->role) === 'editor')>Editor — manage content</option>
-                            <option value="coach" @selected(old('role', $user->role) === 'coach')>Coach — attendance, ratings and reports</option>
+                            <option value="coach" @selected(old('role', $user->role) === 'coach')>Coach — squad players, sessions and reports</option>
                             <option value="admin" @selected(old('role', $user->role) === 'admin')>Administrator — full access</option>
                         </select>
-                        <div class="form-text">Only coaches can mark attendance, rate players and write reports.</div>
+                        <div class="form-text">Coaches manage their own squad's players, sessions, attendance and reports.</div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="team_id">Coach squad</label>
@@ -52,6 +52,23 @@
         </div>
     </div>
     <div class="col-xl-4">
+        <div class="card-panel mb-4">
+            <div class="card-panel-header"><h5 class="mb-0">Profile picture</h5></div>
+            <div class="card-panel-body">
+                @if($user->avatar)
+                    <img src="{{ media_url($user->avatar) }}" alt="" class="w-100 rounded mb-2" style="height:200px;object-fit:cover;">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="remove_avatar" name="remove_avatar" value="1">
+                        <label class="form-check-label small" for="remove_avatar">Remove current picture</label>
+                    </div>
+                @endif
+                <label class="form-label" for="avatar">Profile picture @unless($isEdit)<span class="text-danger">*</span>@endunless</label>
+                <input type="file" id="avatar" name="avatar" class="form-control @error('avatar') is-invalid @enderror" accept="image/*" data-preview="#avatarPreview" @required(! $isEdit)>
+                @error('avatar')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <img id="avatarPreview" class="w-100 rounded mt-2 d-none" alt="Preview" style="height:200px;object-fit:cover;">
+                <div class="form-text">A square photo works best. Max 8 MB.{{ $isEdit ? '' : ' Required when creating an account.' }}</div>
+            </div>
+        </div>
         <div class="card-panel">
             <div class="card-panel-header"><h5 class="mb-0">Access</h5></div>
             <div class="card-panel-body">

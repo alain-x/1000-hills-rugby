@@ -11,7 +11,7 @@
 
 @include('admin.partials.errors')
 
-<form action="{{ route('admin.users.store') }}" method="POST" class="form-admin">
+<form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data" class="form-admin">
     @csrf
     @include('admin.users._form')
 </form>

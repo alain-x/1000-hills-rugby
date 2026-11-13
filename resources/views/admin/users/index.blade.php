@@ -33,7 +33,11 @@
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-3">
-                                <span class="rounded-circle bg-success text-white d-grid" style="width:40px;height:40px;place-items:center;font-size:.75rem;font-weight:700;">{{ $user->initials() }}</span>
+                                @if($user->avatar)
+                                    <img src="{{ media_url($user->avatar) }}" alt="" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+                                @else
+                                    <span class="rounded-circle bg-success text-white d-grid" style="width:40px;height:40px;place-items:center;font-size:.75rem;font-weight:700;">{{ $user->initials() }}</span>
+                                @endif
                                 <div>
                                     <div class="fw-semibold">{{ $user->name }} @if($user->id === auth()->id())<span class="badge-soft ms-1">You</span>@endif</div>
                                     <div class="text-muted small">{{ $user->email }}</div>

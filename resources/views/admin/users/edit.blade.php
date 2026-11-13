@@ -11,7 +11,7 @@
 
 @include('admin.partials.errors')
 
-<form action="{{ route('admin.users.update', $user) }}" method="POST" class="form-admin">
+<form action="{{ route('admin.users.update', $user) }}" method="POST" enctype="multipart/form-data" class="form-admin">
     @csrf
     @method('PUT')
     @include('admin.users._form')

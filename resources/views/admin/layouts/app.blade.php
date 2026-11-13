@@ -110,7 +110,11 @@
                 <a href="{{ route('home') }}" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm d-none d-md-inline-flex"><i class="bi bi-box-arrow-up-right me-1"></i>Website</a>
                 <div class="dropdown">
                     <button class="btn btn-light btn-sm d-flex align-items-center gap-2 border" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="rounded-circle bg-success text-white d-grid" style="width:30px;height:30px;place-items:center;font-size:.72rem;font-weight:700;">{{ $admin?->initials() }}</span>
+                        @if($admin?->avatar)
+                            <img src="{{ media_url($admin->avatar) }}" alt="" class="rounded-circle" style="width:30px;height:30px;object-fit:cover;">
+                        @else
+                            <span class="rounded-circle bg-success text-white d-grid" style="width:30px;height:30px;place-items:center;font-size:.72rem;font-weight:700;">{{ $admin?->initials() }}</span>
+                        @endif
                         <span class="d-none d-md-inline">{{ $admin?->name }}</span>
                         <i class="bi bi-chevron-down small"></i>
                     </button>

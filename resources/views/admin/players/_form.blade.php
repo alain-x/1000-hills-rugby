@@ -162,9 +162,11 @@
                         <label class="form-check-label small" for="remove_image">Remove current photo</label>
                     </div>
                 @endif
-                <input type="file" name="image" class="form-control" accept="image/*" data-preview="#playerPreview">
+                <label class="form-label" for="image">Profile picture @unless($isEdit)<span class="text-danger">*</span>@endunless</label>
+                <input type="file" id="image" name="image" class="form-control @error('image') is-invalid @enderror" accept="image/*" data-preview="#playerPreview" @required(! $isEdit)>
+                @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 <img id="playerPreview" class="w-100 rounded mt-2 d-none" alt="Preview" style="height:200px;object-fit:cover;">
-                <div class="form-text">Portrait image, ideally 3:4. Max 8 MB.</div>
+                <div class="form-text">Portrait image, ideally 3:4. Max 8 MB.{{ $isEdit ? '' : ' Required when adding a player.' }}</div>
             </div>
         </div>
     </div>

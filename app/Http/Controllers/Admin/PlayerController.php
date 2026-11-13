@@ -56,7 +56,7 @@ class PlayerController extends Controller
 
     public function store(Request $request)
     {
-        $data = $this->validated($request);
+        $data = $this->validated($request, requireImage: true);
         $data = $this->forceCoachTeam($request, $data);
         $data['slug'] = unique_slug($data['name'], Player::class);
         $data['image'] = upload_media($request->file('image'), 'players');
@@ -117,13 +117,13 @@ class PlayerController extends Controller
         return back()->with('success', 'Player removed.');
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, bool $requireImage = false): array
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'team_id' => ['nullable', 'exists:teams,id'],
             'team' => ['required', 'string', 'max:40'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:8192'],
+            'image' => [$requireImage ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:8192'],
             'date_of_birth' => ['nullable', 'date', 'before:today'],
             'age' => ['nullable', 'integer', 'min:10', 'max:80'],
             'role' => ['nullable', 'string', 'max:80'],
@@ -141,6 +141,8 @@ class PlayerController extends Controller
             'previous_clubs' => ['nullable', 'string'],
             'sponsor' => ['nullable', 'string', 'max:120'],
             'sponsor_desc' => ['nullable', 'string'],
+        ], [], [
+            'image' => 'profile picture',
         ]);
 
         $data['is_published'] = $request->boolean('is_published');

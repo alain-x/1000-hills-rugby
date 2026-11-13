@@ -43,11 +43,15 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:150', 'unique:users,email'],
             'role' => ['required', 'in:admin,editor,coach'],
             'team_id' => ['nullable', 'exists:teams,id', Rule::requiredIf(fn () => $request->input('role') === 'coach')],
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:8192'],
             'password' => ['required', 'confirmed', Password::min(8)],
+        ], [], [
+            'avatar' => 'profile picture',
         ]);
 
         $data['is_active'] = $request->boolean('is_active');
         $data['team_id'] = $data['role'] === 'coach' ? $data['team_id'] : null;
+        $data['avatar'] = upload_media($request->file('avatar'), 'avatars');
         $user = User::create($data);
         Activity::log('created', $user, 'Created admin user: '.$user->name);
 
@@ -69,7 +73,10 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', 'in:admin,editor,coach'],
             'team_id' => ['nullable', 'exists:teams,id', Rule::requiredIf(fn () => $request->input('role') === 'coach')],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:8192'],
             'password' => ['nullable', 'confirmed', Password::min(8)],
+        ], [], [
+            'avatar' => 'profile picture',
         ]);
 
         if (blank($data['password'] ?? null)) {
@@ -78,6 +85,17 @@ class UserController extends Controller
 
         $data['is_active'] = $request->boolean('is_active');
         $data['team_id'] = $data['role'] === 'coach' ? $data['team_id'] : null;
+
+        if ($request->hasFile('avatar')) {
+            $data['avatar'] = upload_media($request->file('avatar'), 'avatars', $user->avatar);
+        } else {
+            unset($data['avatar']);
+        }
+
+        if ($request->boolean('remove_avatar')) {
+            delete_media($user->avatar);
+            $data['avatar'] = null;
+        }
 
         if ($user->isAdmin() && $data['role'] !== 'admin' && User::where('role', 'admin')->count() <= 1) {
             return back()->withInput()->withErrors(['role' => 'The last administrator cannot be demoted.']);
@@ -100,6 +118,7 @@ class UserController extends Controller
         }
 
         $name = $user->name;
+        delete_media($user->avatar);
         $user->delete();
         Activity::log('deleted', null, 'Deleted admin user: '.$name);
 
